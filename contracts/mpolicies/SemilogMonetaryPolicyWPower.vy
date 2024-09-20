@@ -124,6 +124,19 @@ def ln_int(_x: uint256) -> int256:
         return result
     else:
         return -result
+
+@internal
+@pure
+def power(base: uint256, exponent: uint256) -> uint256:
+    result: uint256 = 10**18  # 1 in fixed-point
+    for _ in range(256):
+        if exponent & 1:
+            result = result * base / 10**18
+        exponent = exponent / 2
+        if exponent == 0:
+            break
+        base = base * base / 10**18
+    return result
 ### END MATH ###
 
 
@@ -140,8 +153,14 @@ def calculate_rate(_for: address, d_reserves: int256, d_debt: int256) -> uint256
     else:
         log_min_rate: int256 = self.log_min_rate
         log_max_rate: int256 = self.log_max_rate
-        return self.exp(total_debt * (log_max_rate - log_min_rate) / total_reserves + log_min_rate)
-
+        if self.exponent == 1
+            return self.exp(total_debt * (log_max_rate - log_min_rate) / total_reserves + log_min_rate)
+        else:
+            utilization: uint256 = convert(total_debt * 10**18 / total_reserves, uint256)
+            utilization_powered: uint256 = self.power(utilization, self.exponent)
+            return self.exp(
+                convert(utilization_powered * (log_max_rate - log_min_rate) / 10**18, int256) + log_min_rate
+            )
 
 @view
 @external
